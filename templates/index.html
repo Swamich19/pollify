@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 text-center">
+        <div class="hero-section mb-5">
+            <h1 class="display-4 fw-bold mb-4">
+                <i data-feather="trending-up" class="me-3"></i>
+                Welcome to Pollify
+            </h1>
+            <p class="lead mb-4">
+                Create engaging polls, share them instantly with QR codes, and watch real-time results unfold. 
+                Perfect for gatherings, classrooms, events, and decision-making.
+            </p>
+            
+            {% if not session.user_id %}
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        Get Started
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i data-feather="log-in" class="me-2"></i>
+                        Sign In
+                    </a>
+                </div>
+            {% else %}
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4">
+                        <i data-feather="home" class="me-2"></i>
+                        Go to Dashboard
+                    </a>
+                    <a href="{{ url_for('create_poll') }}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i data-feather="plus" class="me-2"></i>
+                        Create New Poll
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="row g-4 mt-5">
+            <div class="col-md-4">
+                <div class="card h-100 bg-transparent border-secondary">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="edit-3" class="text-info" style="width: 48px; height: 48px;"></i>
+                        </div>
+                        <h5 class="card-title">Easy Poll Creation</h5>
+                        <p class="card-text">Create polls in seconds with multiple choice options. Simple and intuitive interface.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 bg-transparent border-secondary">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="share-2" class="text-success" style="width: 48px; height: 48px;"></i>
+                        </div>
+                        <h5 class="card-title">QR Code Sharing</h5>
+                        <p class="card-text">Share your polls instantly with generated QR codes. Perfect for presentations and events.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 bg-transparent border-secondary">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="activity" class="text-warning" style="width: 48px; height: 48px;"></i>
+                        </div>
+                        <h5 class="card-title">Real-time Results</h5>
+                        <p class="card-text">Watch votes come in live with beautiful charts that update automatically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-transparent border-info">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-info">
+                            <i data-feather="zap" class="me-2"></i>
+                            How It Works
+                        </h5>
+                        <div class="row mt-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">1</div>
+                                <h6>Register</h6>
+                                <small class="text-muted">Create your free account</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">2</div>
+                                <h6>Create Poll</h6>
+                                <small class="text-muted">Add your question and options</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">3</div>
+                                <h6>Share</h6>
+                                <small class="text-muted">Use QR codes or links to share</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">4</div>
+                                <h6>Watch Results</h6>
+                                <small class="text-muted">See live updates and analytics</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

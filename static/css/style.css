@@ -1,0 +1,334 @@
+/* Custom styles for Pollify */
+
+:root {
+    --pollify-primary: #0d6efd;
+    --pollify-secondary: #6c757d;
+    --pollify-success: #198754;
+    --pollify-warning: #ffc107;
+    --pollify-danger: #dc3545;
+    --pollify-info: #0dcaf0;
+}
+
+/* Global styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+/* Navigation enhancements */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.navbar-brand i {
+    color: var(--pollify-info);
+}
+
+/* Hero section */
+.hero-section {
+    padding: 3rem 0;
+}
+
+.hero-section h1 {
+    background: linear-gradient(135deg, var(--pollify-primary), var(--pollify-info));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Feature cards */
+.feature-icon {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Cards */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 0.75rem;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn i {
+    width: 16px;
+    height: 16px;
+}
+
+/* Form enhancements */
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border-width: 2px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group-text {
+    border-width: 2px;
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.input-group .form-control {
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+/* Form check styling */
+.form-check {
+    transition: background-color 0.2s ease-in-out;
+}
+
+.form-check:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.form-check-input:checked {
+    background-color: var(--pollify-primary);
+    border-color: var(--pollify-primary);
+}
+
+/* Poll option styling */
+.poll-option {
+    padding: 1rem;
+    border: 2px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.poll-option:hover {
+    border-color: var(--pollify-primary);
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.poll-option.selected {
+    border-color: var(--pollify-primary);
+    background-color: rgba(13, 110, 253, 0.2);
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+/* QR Code styling */
+.qr-code-container {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    display: inline-block;
+}
+
+/* Progress bars */
+.progress {
+    height: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.progress-bar {
+    border-radius: 0.5rem;
+}
+
+/* Statistics cards */
+.stat-card {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.05));
+    border: 2px solid rgba(13, 110, 253, 0.2);
+}
+
+.stat-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--pollify-primary);
+}
+
+/* Toast positioning */
+.toast-container {
+    z-index: 9999;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--pollify-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pulse animation for live updates */
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Step indicators */
+.step-number {
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+/* Table enhancements */
+.table-responsive {
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .stat-card .stat-number {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar, .btn, footer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .text-white {
+        color: #000 !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card {
+        border-width: 3px;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+    
+    .form-control, .form-select {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus indicators for accessibility */
+.btn:focus,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    outline: 2px solid var(--pollify-primary);
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-light);
+}

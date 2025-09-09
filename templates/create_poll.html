@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Create Poll - Pollify{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="mb-4">
+            <i data-feather="plus" class="me-2"></i>
+            Create New Poll
+        </h1>
+        
+        <div class="card bg-transparent border-secondary">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="question" class="form-label">Poll Question</label>
+                        <textarea class="form-control" id="question" name="question" rows="3" 
+                                placeholder="What would you like to ask?" required></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Poll Options</label>
+                        <div id="options-container">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">
+                                    <i data-feather="circle"></i>
+                                </span>
+                                <input type="text" class="form-control" name="options" placeholder="Option 1" required>
+                                <button type="button" class="btn btn-outline-danger" onclick="removeOption(this)" disabled>
+                                    <i data-feather="trash-2"></i>
+                                </button>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">
+                                    <i data-feather="circle"></i>
+                                </span>
+                                <input type="text" class="form-control" name="options" placeholder="Option 2" required>
+                                <button type="button" class="btn btn-outline-danger" onclick="removeOption(this)">
+                                    <i data-feather="trash-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addOption()">
+                            <i data-feather="plus" class="me-1"></i>
+                            Add Option
+                        </button>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i data-feather="arrow-left" class="me-2"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="check" class="me-2"></i>
+                            Create Poll
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-3 bg-dark rounded">
+            <h6 class="text-info">
+                <i data-feather="info" class="me-2"></i>
+                Tips for Great Polls
+            </h6>
+            <ul class="small text-muted mb-0">
+                <li>Keep your question clear and concise</li>
+                <li>Provide balanced and comprehensive options</li>
+                <li>Consider adding an "Other" option for flexibility</li>
+                <li>Test your poll before sharing widely</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+let optionCount = 2;
+
+function addOption() {
+    optionCount++;
+    const container = document.getElementById('options-container');
+    const newOption = document.createElement('div');
+    newOption.className = 'input-group mb-2';
+    newOption.innerHTML = `
+        <span class="input-group-text">
+            <i data-feather="circle"></i>
+        </span>
+        <input type="text" class="form-control" name="options" placeholder="Option ${optionCount}">
+        <button type="button" class="btn btn-outline-danger" onclick="removeOption(this)">
+            <i data-feather="trash-2"></i>
+        </button>
+    `;
+    container.appendChild(newOption);
+    feather.replace();
+    updateRemoveButtons();
+}
+
+function removeOption(button) {
+    const container = document.getElementById('options-container');
+    const optionDiv = button.closest('.input-group');
+    container.removeChild(optionDiv);
+    updateRemoveButtons();
+}
+
+function updateRemoveButtons() {
+    const container = document.getElementById('options-container');
+    const removeButtons = container.querySelectorAll('.btn-outline-danger');
+    
+    // Disable remove button if there are only 2 options
+    if (removeButtons.length <= 2) {
+        removeButtons[0].disabled = true;
+    } else {
+        removeButtons.forEach(button => button.disabled = false);
+    }
+}
+</script>
+{% endblock %}

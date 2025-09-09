@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poll.question }} - Pollify{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card bg-transparent border-secondary mb-4">
+            <div class="card-body">
+                <h2 class="card-title mb-3">{{ poll.question }}</h2>
+                <p class="text-muted mb-4">
+                    <i data-feather="user" class="me-1"></i>
+                    Created by {{ poll.creator.username }} on {{ poll.created_at.strftime('%Y-%m-%d') }}
+                </p>
+                
+                <form id="vote-form" method="POST" action="{{ url_for('vote') }}">
+                    <input type="hidden" name="poll_id" value="{{ poll.id }}">
+                    
+                    <div class="mb-4">
+                        {% for option in poll.options %}
+                            <div class="form-check mb-3 p-3 border rounded">
+                                <input class="form-check-input" type="radio" name="option_id" 
+                                       id="option{{ option.id }}" value="{{ option.id }}">
+                                <label class="form-check-label h6" for="option{{ option.id }}">
+                                    {{ option.text }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg" id="vote-btn">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        Cast Your Vote
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="card bg-transparent border-info">
+            <div class="card-header bg-transparent">
+                <h4 class="mb-0">
+                    <i data-feather="bar-chart-2" class="me-2"></i>
+                    Live Results
+                    <span class="badge bg-primary ms-2" id="total-votes">{{ poll.total_votes() }} votes</span>
+                </h4>
+            </div>
+            <div class="card-body">
+                <canvas id="results-chart" width="400" height="200"></canvas>
+                
+                <div class="mt-4" id="results-list">
+                    {% for option in poll.options %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ option.text }}</span>
+                            <span class="badge bg-secondary option-votes" data-option-id="{{ option.id }}">
+                                {{ option.votes|length }} votes
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- QR Code Section -->
+        <div class="card bg-transparent border-warning mb-4">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0">
+                    <i data-feather="share-2" class="me-2"></i>
+                    Share This Poll
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
+                <p class="small text-muted mb-3">Scan with your phone camera</p>
+                
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="poll-url" value="{{ poll_url }}" readonly>
+                    <button class="btn btn-outline-secondary" onclick="copyPollUrl()">
+                        <i data-feather="copy"></i>
+                    </button>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="sharePoll()">
+                        <i data-feather="share" class="me-1"></i>
+                        Share Link
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Poll Info -->
+        <div class="card bg-transparent border-secondary">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    Poll Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-2">
+                    <strong>Total Options:</strong> {{ poll.options|length }}
+                </p>
+                <p class="small mb-2">
+                    <strong>Created:</strong> {{ poll.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </p>
+                <p class="small mb-0">
+                    <strong>Poll ID:</strong> {{ poll.share_code }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Chart.js
+const ctx = document.getElementById('results-chart').getContext('2d');
+let chart;
+
+// Initial poll results
+const initialResults = {{ results|tojson }};
+const pollId = {{ poll.id }};
+
+// Initialize chart
+function initChart(results) {
+    const labels = Object.values(results).map(r => r.text);
+    const data = Object.values(results).map(r => r.votes);
+    
+    chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    '#0d6efd', '#198754', '#ffc107', '#dc3545', 
+                    '#6610f2', '#fd7e14', '#20c997', '#6f42c1'
+                ],
+                borderWidth: 2,
+                borderColor: '#495057'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#ffffff',
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Update chart with new data
+function updateChart(results) {
+    const labels = Object.values(results).map(r => r.text);
+    const data = Object.values(results).map(r => r.votes);
+    
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    chart.update();
+}
+
+// Initialize Socket.IO
+const socket = io();
+
+// Join poll room for real-time updates
+socket.emit('join_poll', {poll_id: pollId});
+
+// Listen for vote updates
+socket.on('vote_update', function(data) {
+    if (data.poll_id == pollId) {
+        updateChart(data.results);
+        document.getElementById('total-votes').textContent = data.total_votes + ' votes';
+        
+        // Update individual vote counts
+        Object.keys(data.results).forEach(optionId => {
+            const badge = document.querySelector(`.option-votes[data-option-id="${optionId}"]`);
+            if (badge) {
+                badge.textContent = data.results[optionId].votes + ' votes';
+            }
+        });
+    }
+});
+
+// Handle vote submission
+document.getElementById('vote-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const voteBtn = document.getElementById('vote-btn');
+    
+    // Disable button temporarily
+    voteBtn.disabled = true;
+    voteBtn.innerHTML = '<i data-feather="clock" class="me-2"></i>Submitting...';
+    feather.replace();
+    
+    fetch('{{ url_for("vote") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide voting form and show success message
+            document.getElementById('vote-form').style.display = 'none';
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success';
+            successDiv.innerHTML = '<i data-feather="check-circle" class="me-2"></i>Thank you for voting!';
+            document.querySelector('.card-body').appendChild(successDiv);
+            feather.replace();
+            
+            // Update results immediately
+            updateChart(data.results);
+            document.getElementById('total-votes').textContent = data.total_votes + ' votes';
+        } else {
+            // Show error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-warning';
+            errorDiv.innerHTML = '<i data-feather="alert-triangle" class="me-2"></i>' + data.message;
+            document.querySelector('.card-body').appendChild(errorDiv);
+            feather.replace();
+            
+            // Re-enable button
+            voteBtn.disabled = false;
+            voteBtn.innerHTML = '<i data-feather="check-circle" class="me-2"></i>Cast Your Vote';
+            feather.replace();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        voteBtn.disabled = false;
+        voteBtn.innerHTML = '<i data-feather="check-circle" class="me-2"></i>Cast Your Vote';
+        feather.replace();
+    });
+});
+
+// Utility functions
+function copyPollUrl() {
+    const urlInput = document.getElementById('poll-url');
+    urlInput.select();
+    navigator.clipboard.writeText(urlInput.value).then(function() {
+        showToast('Poll URL copied to clipboard!');
+    });
+}
+
+function sharePoll() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ poll.question }}',
+            text: 'Vote on this poll: {{ poll.question }}',
+            url: '{{ poll_url }}'
+        });
+    } else {
+        copyPollUrl();
+    }
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toast.innerHTML = `
+        <div class="toast show" role="alert">
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        document.body.removeChild(toast);
+    }, 2000);
+}
+
+// Initialize chart on page load
+initChart(initialResults);
+</script>
+{% endblock %}
