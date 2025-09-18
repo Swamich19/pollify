@@ -1,0 +1,12 @@
+Flask
+Flask-SocketIO
+Flask-SQLAlchemy
+psycopg2-binary
+qrcode
+Werkzeug
+python-dotenv
+secrets
+io
+base64
+logging
+sqlalchemy
