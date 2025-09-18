@@ -1,3 +1,4 @@
+from app import app
 import secrets
 import qrcode
 import io
@@ -73,7 +74,7 @@ def dashboard():
     
     user = User.query.get(session['user_id'])
     polls = Poll.query.filter_by(user_id=user.id).all()
-    
+    total_votes = sum(poll.total_votes() for poll in polls)
     return render_template('dashboard.html', user=user, polls=polls)
 
 @app.route('/create_poll', methods=['GET', 'POST'])
@@ -140,8 +141,9 @@ def poll_detail(share_code):
 def vote():
     poll_id = request.form['poll_id']
     option_id = request.form['option_id']
-    voter_ip = request.remote_addr
-    
+    voter_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    print(f"Voter IP: {voter_ip}")
+    print(f"Poll ID: {poll_id}, Option ID: {option_id}")
     # Check if this IP has already voted
     existing_vote = Vote.query.filter_by(poll_id=poll_id, voter_ip=voter_ip).first()
     if existing_vote:

@@ -1,21 +1,16 @@
 {% extends "base.html" %}
-
 {% block title %}Admin Dashboard - Pollify{% endblock %}
-
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">
-            <i data-feather="shield" class="me-2"></i>
-            Admin Dashboard
-        </h1>
+        <h1 class="mb-4"><i data-feather="shield" class="me-2"></i>Admin Dashboard</h1>
         
         <!-- Statistics Cards -->
         <div class="row mb-5">
             <div class="col-md-3">
                 <div class="card bg-transparent border-info">
                     <div class="card-body text-center">
-                        <h3 class="text-info">{{ user_stats|length }}</h3>
+                        <h3 class="text-info">{{ user_stats|length if user_stats else 0 }}</h3>
                         <p class="mb-0">Total Users</p>
                     </div>
                 </div>
@@ -23,7 +18,7 @@
             <div class="col-md-3">
                 <div class="card bg-transparent border-success">
                     <div class="card-body text-center">
-                        <h3 class="text-success">{{ polls|length }}</h3>
+                        <h3 class="text-success">{{ polls|length if polls else 0 }}</h3>
                         <p class="mb-0">Total Polls</p>
                     </div>
                 </div>
@@ -31,7 +26,11 @@
             <div class="col-md-3">
                 <div class="card bg-transparent border-warning">
                     <div class="card-body text-center">
-                        <h3 class="text-warning">{{ polls|sum(attribute='total_votes') }}</h3>
+                        <h3 class="text-warning">
+                            {% set total_votes = 0 %}
+                            {% if polls %}{% for poll in polls %}{% if poll.total_votes is callable %}{% set total_votes = total_votes + poll.total_votes() %}{% else %}{% set total_votes = total_votes + (poll.total_votes|default(0, true)) %}{% endif %}{% endfor %}{% endif %}
+                            {{ total_votes }}
+                        </h3>
                         <p class="mb-0">Total Votes</p>
                     </div>
                 </div>
@@ -39,7 +38,11 @@
             <div class="col-md-3">
                 <div class="card bg-transparent border-danger">
                     <div class="card-body text-center">
-                        <h3 class="text-danger">{{ user_stats|sum(attribute='poll_count') }}</h3>
+                        <h3 class="text-danger">
+                            {% set total_polls_created = 0 %}
+                            {% if user_stats %}{% for stat in user_stats %}{% set total_polls_created = total_polls_created + (stat.poll_count|default(0, true)) %}{% endfor %}{% endif %}
+                            {{ total_polls_created }}
+                        </h3>
                         <p class="mb-0">Polls Created</p>
                     </div>
                 </div>
@@ -49,45 +52,26 @@
         <!-- Users Management -->
         <div class="card bg-transparent border-secondary mb-5">
             <div class="card-header bg-transparent">
-                <h4 class="mb-0">
-                    <i data-feather="users" class="me-2"></i>
-                    User Management
-                </h4>
+                <h4 class="mb-0"><i data-feather="users" class="me-2"></i>User Management</h4>
             </div>
             <div class="card-body">
-                {% if user_stats %}
+                {% if user_stats and user_stats|length > 0 %}
                     <div class="table-responsive">
                         <table class="table table-dark table-striped">
                             <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Joined</th>
-                                    <th>Polls Created</th>
-                                    <th>Total Votes</th>
-                                    <th>Actions</th>
-                                </tr>
+                                <tr><th>Username</th><th>Email</th><th>Joined</th><th>Polls Created</th><th>Total Votes</th><th>Actions</th></tr>
                             </thead>
                             <tbody>
                                 {% for stat in user_stats %}
                                     <tr>
+                                        <td><i data-feather="user" class="me-2"></i>{{ stat.user.username|default('Unknown', true) }}</td>
+                                        <td>{{ stat.user.email|default('N/A', true) }}</td>
+                                        <td>{{ stat.user.created_at.strftime('%Y-%m-%d') if stat.user.created_at else 'N/A' }}</td>
+                                        <td><span class="badge bg-primary">{{ stat.poll_count|default(0, true) }}</span></td>
+                                        <td><span class="badge bg-success">{{ stat.total_votes|default(0, true) }}</span></td>
                                         <td>
-                                            <i data-feather="user" class="me-2"></i>
-                                            {{ stat.user.username }}
-                                        </td>
-                                        <td>{{ stat.user.email }}</td>
-                                        <td>{{ stat.user.created_at.strftime('%Y-%m-%d') }}</td>
-                                        <td>
-                                            <span class="badge bg-primary">{{ stat.poll_count }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-success">{{ stat.total_votes }}</span>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-outline-danger btn-sm" 
-                                                    onclick="confirmDeleteUser({{ stat.user.id }}, '{{ stat.user.username }}')">
-                                                <i data-feather="trash-2" class="me-1"></i>
-                                                Delete
+                                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteUser({{ stat.user.id }}, '{{ stat.user.username|replace("'", "&#39;") }}')">
+                                                <i data-feather="trash-2" class="me-1"></i>Delete
                                             </button>
                                         </td>
                                     </tr>
@@ -107,47 +91,30 @@
         <!-- Polls Management -->
         <div class="card bg-transparent border-secondary">
             <div class="card-header bg-transparent">
-                <h4 class="mb-0">
-                    <i data-feather="list" class="me-2"></i>
-                    Polls Management
-                </h4>
+                <h4 class="mb-0"><i data-feather="list" class="me-2"></i>Polls Management</h4>
             </div>
             <div class="card-body">
-                {% if polls %}
+                {% if polls and polls|length > 0 %}
                     <div class="row">
                         {% for poll in polls %}
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card h-100 bg-transparent border-secondary">
                                     <div class="card-body">
-                                        <h6 class="card-title">{{ poll.question }}</h6>
-                                        <p class="card-text text-muted small">
-                                            <i data-feather="user" class="me-1"></i>
-                                            By {{ poll.creator.username }}
-                                        </p>
-                                        <p class="card-text text-muted small">
-                                            <i data-feather="calendar" class="me-1"></i>
-                                            {{ poll.created_at.strftime('%Y-%m-%d') }}
-                                        </p>
+                                        <h6 class="card-title">{{ poll.question|default('Untitled Poll', true) }}</h6>
+                                        <p class="card-text text-muted small"><i data-feather="user" class="me-1"></i>By {{ poll.creator.username|default('Unknown', true) if poll.creator else 'Unknown' }}</p>
+                                        <p class="card-text text-muted small"><i data-feather="calendar" class="me-1"></i>{{ poll.created_at.strftime('%Y-%m-%d') if poll.created_at else 'N/A' }}</p>
                                         <p class="card-text">
-                                            <span class="badge bg-primary">{{ poll.total_votes() }} votes</span>
-                                            <span class="badge bg-secondary">{{ poll.options|length }} options</span>
+                                            <span class="badge bg-primary">{% if poll.total_votes is callable %}{{ poll.total_votes() }}{% else %}{{ poll.total_votes|default(0, true) }}{% endif %} votes</span>
+                                            <span class="badge bg-secondary">{{ poll.options|length if poll.options else 0 }} options</span>
                                         </p>
-                                        
-                                        <!-- Mini Chart -->
-                                        <canvas id="chart-{{ poll.id }}" width="200" height="100" class="mb-3"></canvas>
+                                        <div class="d-flex justify-content-center">
+                                            <canvas id="chart-{{ poll.id }}" width="120" height="120" class="mb-3"></canvas>
+                                        </div>
                                     </div>
                                     <div class="card-footer bg-transparent">
                                         <div class="d-flex justify-content-between">
-                                            <a href="{{ url_for('poll_detail', share_code=poll.share_code) }}" 
-                                               class="btn btn-outline-primary btn-sm">
-                                                <i data-feather="eye" class="me-1"></i>
-                                                View
-                                            </a>
-                                            <button class="btn btn-outline-danger btn-sm" 
-                                                    onclick="confirmDeletePoll({{ poll.id }}, '{{ poll.question }}')">
-                                                <i data-feather="trash-2" class="me-1"></i>
-                                                Delete
-                                            </button>
+                                            <a href="{{ url_for('poll_detail', share_code=poll.share_code) }}" class="btn btn-outline-primary btn-sm"><i data-feather="eye" class="me-1"></i>View</a>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletePoll({{ poll.id }}, '{{ poll.question|replace("'", "&#39;") }}')"><i data-feather="trash-2" class="me-1"></i>Delete</button>
                                         </div>
                                     </div>
                                 </div>
@@ -165,7 +132,6 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content bg-dark">
@@ -173,9 +139,7 @@
                 <h5 class="modal-title">Confirm Deletion</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p id="delete-message"></p>
-            </div>
+            <div class="modal-body"><p id="delete-message"></p></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <a href="#" id="delete-confirm-btn" class="btn btn-danger">Delete</a>
@@ -184,72 +148,48 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/feather-icons"></script>
 <script>
-// Initialize mini charts for each poll
-{% for poll in polls %}
-    (function() {
-        const ctx = document.getElementById('chart-{{ poll.id }}').getContext('2d');
-        const results = {{ poll.get_results()|tojson }};
-        const labels = Object.values(results).map(r => r.text.substring(0, 15) + (r.text.length > 15 ? '...' : ''));
-        const data = Object.values(results).map(r => r.votes);
-        
+feather.replace();
+{% if polls %}{% for poll in polls %}
+(function() {
+    try {
+        const chartElement = document.getElementById('chart-{{ poll.id }}');
+        if (!chartElement) return;
+        const ctx = chartElement.getContext('2d');
+        let results = {};
+        {% if poll.get_results %}try { results = {{ poll.get_results()|tojson|safe }}; } catch (e) { results = {}; }{% endif %}
+        const resultValues = Object.values(results);
+        const labels = resultValues.map(r => { const text = (r && r.text) ? r.text : 'Option'; return text.length > 15 ? text.substring(0, 15) + '...' : text; });
+        const data = resultValues.map(r => (r && typeof r.votes === 'number') ? r.votes : 0);
         new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: '#0d6efd',
-                    borderColor: '#0d6efd',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            color: '#ffffff'
-                        },
-                        grid: {
-                            color: '#495057'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#ffffff'
-                        },
-                        grid: {
-                            color: '#495057'
-                        }
-                    }
-                }
-            }
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#6c757d'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, cutout: '60%' }
         });
-    })();
-{% endfor %}
+    } catch (error) { console.error('Error creating chart for poll {{ poll.id }}:', error); }
+})();
+{% endfor %}{% endif %}
 
 function confirmDeleteUser(userId, username) {
-    document.getElementById('delete-message').textContent = 
-        `Are you sure you want to delete user "${username}"? This will also delete all their polls and cannot be undone.`;
-    document.getElementById('delete-confirm-btn').href = 
-        `{{ url_for('delete_user', user_id=0) }}`.replace('0', userId);
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    try {
+        if (!userId || !username) return;
+        document.getElementById('delete-message').textContent = 'Are you sure you want to delete user "' + username + '"?';
+        document.getElementById('delete-confirm-btn').href = '/admin/delete_user/' + userId;
+        if (typeof bootstrap !== 'undefined') { new bootstrap.Modal(document.getElementById('deleteModal')).show(); } 
+        else if (confirm('Are you sure you want to delete user "' + username + '"? This will also delete all their polls and cannot be undone.')) { window.location.href = '/admin/delete_user/' + userId; }
+    } catch (error) { console.error('Error in confirmDeleteUser:', error); }
 }
 
 function confirmDeletePoll(pollId, question) {
-    document.getElementById('delete-message').textContent = 
-        `Are you sure you want to delete the poll "${question}"? This action cannot be undone.`;
-    document.getElementById('delete-confirm-btn').href = 
-        `{{ url_for('delete_poll', poll_id=0) }}`.replace('0', pollId);
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    try {
+        if (!pollId || !question) return;
+        document.getElementById('delete-message').textContent = 'Are you sure you want to delete the poll "' + question + '"? This action cannot be undone.';
+        document.getElementById('delete-confirm-btn').href = '/admin/delete_poll/' + pollId;
+        if (typeof bootstrap !== 'undefined') { new bootstrap.Modal(document.getElementById('deleteModal')).show(); } 
+        else if (confirm('Are you sure you want to delete the poll "' + question + '"? This action cannot be undone.')) { window.location.href = '/admin/delete_poll/' + pollId; }
+    } catch (error) { console.error('Error in confirmDeletePoll:', error); }
 }
 </script>
 {% endblock %}
