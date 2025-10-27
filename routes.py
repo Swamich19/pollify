@@ -122,7 +122,7 @@ def poll_detail(share_code):
     poll = Poll.query.filter_by(share_code=share_code).first_or_404()
     
     # Generate QR code
-    poll_url = urljoin(request.url_root, url_for('poll_detail', share_code=share_code))
+    poll_url = urljoin('https://whwt5f1w-5000.inc1.devtunnels.ms/', url_for('poll_detail', share_code=share_code))
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(poll_url)
     qr.make(fit=True)

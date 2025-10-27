@@ -4,26 +4,18 @@ from flask import Flask
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-
-# ---------------------------------------
 # Logging setup
-# ---------------------------------------
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-# ---------------------------------------
 # Base for SQLAlchemy
-# ---------------------------------------
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-
-# ---------------------------------------
 # Flask app config
-# ---------------------------------------
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://neondb_owner:npg_CiF6t3JRObDz@ep-green-mode-adiqj2jo-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
@@ -38,9 +30,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Import routes after app + db init
 from routes import *
 
-# ---------------------------------------
 # Setup database and default admin
-# ---------------------------------------
+
 with app.app_context():
     import models
     db.create_all()
